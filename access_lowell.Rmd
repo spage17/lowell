@@ -19,16 +19,16 @@ library(wesanderson)
 library(tidytransit)
 library(stars)
 
-#dir.create("networks")
+# dir.create("networks")
 ```
 
 ```{r}
 rta_stops <- st_read("RTA_Bus_Stops")
 
-#test_plot <- ggplot(rta_stops) +
-  #geom_sf()
+test_plot <- ggplot(rta_stops) +
+  geom_sf()
 
-#test_plot
+test_plot
 ```
 
 ```{r message = FALSE, warning=FALSE, echo=FALSE}
@@ -106,15 +106,18 @@ r5r_core <- setup_r5("networks", verbose = FALSE)
 
 ```{r message = FALSE, warning=FALSE, echo=FALSE}
 ttm <- travel_time_matrix(r5r_core = r5r_core,
-                          origins = Lowell_stops,
-                          destinations = grid_points,
+                          origins = st_transform(Lowell_stops, "WGS84"),
+                          destinations = st_transform(grid_points, "WGS84"),
                           mode = "WALK",
                           max_trip_duration = 40,
                           verbose = FALSE)
+
+stop_r5(r5r_core)
+rJava::.jgc(R.gc = TRUE)
 ```
 
 ```{r message = FALSE, warning=FALSE, echo=FALSE}
-ttm__wide <- ttm %>%
+ttm_wide <- ttm %>%
   pivot_wider(names_from = fromId, 
               names_prefix = "from", values_from = travel_time) %>%
   rename(id = toId) %>% 
@@ -131,7 +134,7 @@ st_geometry(ttm_wide) <- "geometry"
 ```{r message = FALSE, warning=FALSE, echo=FALSE}
 iso_palette <- wes_palette("FantasticFox1", n = 5)
 
-iso10min <- ttms_wide[ttm_wide$from_any < 11,] %>%
+iso10min <- ttm_wide[ttm_wide$from_any < 11,] %>%
   st_union()
 
 iso20min <- ttm_wide[ttm_wide$from_any < 21,] %>%
