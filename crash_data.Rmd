@@ -1,0 +1,47 @@
+---
+title: "lowell_crash"
+author: "SP"
+date: "2/19/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(sf)
+library(spData)
+library(ggthemes)
+library(ggspatial)
+library(leaflet)
+```
+
+```{r}
+crash <- read.csv("crash.csv")
+
+crash <- crash %>%
+  filter(lon != "NA")
+  
+  crash$geometry <- paste(crash$lat, crash$lon, sep=", ")
+  
+  crash$geometry <- sub("^", "c(", crash$geometry)
+  
+crash$geometry <- paste0(crash$geometry, ", 0)")
+```
+
+```{r}
+map <- leaflet() %>%
+  # Base groups
+  addTiles(group = "OSM (default)") %>%
+  addProviderTiles(providers$Stamen.Toner, group = "Toner") %>%
+  addProviderTiles(providers$Stamen.TonerLite, group = "Toner Lite") %>%
+  # Overlay groups
+  addCircles(data = crash, color = "red", fillOpacity = 0.5, popup = paste("Location:", crash$non_mtrst_loc_cl), group = "Crash") %>%
+  # Layers control
+  addLayersControl(
+    baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
+    overlayGroups = ("Crash"),
+    options = layersControlOptions(collapsed = FALSE))
+
+map
+
+```
+
