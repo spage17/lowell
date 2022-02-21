@@ -18,14 +18,24 @@ library(leaflet)
 crash <- read.csv("crash.csv")
 
 crash <- crash %>%
-  filter(lon != "NA")
-  
-  crash$geometry <- paste(crash$lat, crash$lon, sep=", ")
-  
-  crash$geometry <- sub("^", "c(", crash$geometry)
-  
-crash$geometry <- paste0(crash$geometry, ", 0)")
+  filter(lon != "NA") %>%
+  filter(lat != "NA")
+
+crash_sf <- crash %>%
+  st_as_sf(coords = c("lon","lat"))
+
+# crash$geometry <- paste(crash$lat, crash$lon, sep=", ")
+# 
+# crash$geometry <- sub("^", "c(", crash$geometry)
+#   
+# crash$geometry <- paste0(crash$geometry, ", 0)")
 ```
+
+```{r}
+ggplot(crash_sf) +
+  geom_sf()
+```
+
 
 ```{r}
 map <- leaflet() %>%
